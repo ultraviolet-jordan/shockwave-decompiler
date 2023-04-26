@@ -1,6 +1,5 @@
 package com.shockwave.decompiler
 
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.zip.Inflater
 
@@ -16,22 +15,19 @@ tailrec fun ByteBuffer.getVarInt(
     return getVarInt(result = nextResult)
 }
 
-fun ByteBuffer.zlibDecompress(): String {
+fun ByteBuffer.zlibDecompress(compressedLength: Int): ByteBuffer {
     val inflater = Inflater()
-    val outputStream = ByteArrayOutputStream()
+    inflater.setInput(this)
+    val decompressed = ByteArray(compressedLength * 10) // initial size guess
+    val length = inflater.inflate(decompressed)
+    inflater.end()
+    return ByteBuffer.wrap(decompressed.copyOf(length))
+}
 
-    return outputStream.use {
-        val buffer = ByteArray(1024)
-
-        inflater.setInput(this)
-
-        var count = -1
-        while (count != 0) {
-            count = inflater.inflate(buffer)
-            outputStream.write(buffer, 0, count)
-        }
-
-        inflater.end()
-        outputStream.toString()
+fun ByteBuffer.getCString(): String = buildString {
+    var char = get().toInt()
+    while (char != 0) {
+        append(char.toChar())
+        char = get().toInt()
     }
 }
