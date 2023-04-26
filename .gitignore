@@ -3,3 +3,5 @@
 
 /build/
 /decompiler/build/
+
+/decompiler/src/test/resources/hh_badges.cct
